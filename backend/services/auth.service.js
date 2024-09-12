@@ -1,171 +1,247 @@
-import jwt from "jsonwebtoken";
-import crypto from "crypto";
 import User from "../models/user.model.js";
-import Token from "../models/token.model.js";
+import jwt from "jsonwebtoken";
+
+// two factor authentication
+import { JWT } from "../config/default.js";
 
 // commons
-import { BadRequestError } from "../common/errors.js";
-import checkPassword from "../common/check-password.js";
-import hashPassword from "../common/hash-password.js";
+import {
+    validatePassword,
+    encryptPassword,
+    checkPassword,
+    generateOtp,
+} from "../common/index.js";
+// utils
+import { sendSms, smsTypes } from "../common/sendSms.js";
+
 // import sendMail from "../common/send-mail.js";
 
 export default class AuthService {
-  static async signIn({ email, password }) {
-    // check if user exists
-    const user = await User.findOne({ email }, ["password", "_id"]);
-    if (!user) {
-      throw new BadRequestError("Email not found");
-    }
-    // check if password is valid
-    const validPassword = await checkPassword(password, user.password);
-    if (!validPassword) {
-      throw new BadRequestError("Invalid password");
-    }
+    static async signUp({ password, email, ...data }) {
+        // create user
+        const user = new User({ email, ...data });
 
-    if (email == null) {
-      throw new Error("Invalid credentials");
-    }
+        if (!validatePassword(password)) {
+            throw new Error(
+                "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+            );
+        }
 
-    const _user = await User.findOne({ email }, [
-      "_id",
-      "firstName",
-      "lastName",
-      "email",
-      "password",
-    ]);
+        // try to save user to database and catch any errors that occur
+        await user.save();
 
-    // sign user in
-    return AuthService.signInDirect(_user);
-  }
+        user.password = await encryptPassword(password);
 
-  static async signInDirect(user) {
-    const accessToken = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRES_IN,
-    });
+        // after creating user, send verification code to user's phone number
+        const otp = generateOtp(6);
 
-    const signInData = {
-      user,
-      accessToken,
-    };
+        await sendSms(user.phone, otp, smsTypes.register);
 
-    return signInData;
-  }
+        // expiration date is 120 seconds from now
+        const expireDate = new Date(Date.now() + 120 * 1000);
 
-  static async signUp({ password, email, ...data }) {
-    if (!password || !email) {
-      throw new BadRequestError("Paths `password` and `email` are required.");
-    }
-    if (await User.exists({ email })) {
-      throw new BadRequestError(`Email address is already in use: ${email}`);
+        // initialize phoneVerification object
+        user.phoneVerification = {
+            code: otp,
+            expireDate,
+            isVerified: false,
+        };
+
+        return user.save();
     }
 
-    // create user
-    const user = new User({ email, ...data });
-    user.password = await hashPassword(password);
-    await user.save();
+    // verify Phone
+    static async verifyPhone({ phone, verificationCode }) {
+        const user = await User.findOne({ phone });
 
-    return user;
-  }
+        if (!user) {
+            throw new Error("User not found");
+        }
 
-  // reset password request
-  static async resetPasswordRequest(email, res) {
-    const user = await User.findOne({ email });
-    if (!user) {
-      throw new BadRequestError("User not found");
+        // Check if OTP code has expired
+        if (
+            user.phoneVerification.expireDate &&
+            user.phoneVerification.expireDate < new Date()
+        ) {
+            throw new Error("OTP code has expired");
+        }
+
+        // Check if OTP code is correct
+        if (user.phoneVerification.code !== verificationCode) {
+            throw new Error("Invalid verification code");
+        }
+
+        // Verify phone verification
+        user.phoneVerification.isVerified = true;
+
+        await user.save();
+
+        // sign user in
+        AuthService.loginDirect(user);
+
+        return user;
     }
 
-    // check if there is a token created in two minutes.
-    let now = new Date();
+    // if user can't verify phone, send verification code again
+    static async resendVerificationCode({ phone }) {
+        const user = await User.findOne({ phone });
 
-    const twoMinutesAgo = now.setMinutes(now.getMinutes() - 2);
+        if (!user) {
+            throw new Error("User not found");
+        }
 
-    const tokenCreatedInLastTwoMinutes = await Token.findOne({
-      userId: user._id,
-      createdAt: { $gt: new Date(twoMinutesAgo) },
-    });
+        // Check if OTP code is expired
+        if (
+            user.phoneVerification.expireDate &&
+            user.phoneVerification.expireDate >= new Date()
+        ) {
+            throw new Error(
+                "You cannot request more than one code within 120 seconds."
+            );
+        }
 
-    // if user send request in last 2 minutes, send error message
-    if (tokenCreatedInLastTwoMinutes) {
-      throw new BadRequestError("You can send one request per two minutes.");
+        if (user.phoneVerification.isVerified) {
+            throw new Error("Phone number already verified");
+        }
+
+        // Generate new OTP code
+        const otp = generateOtp(6);
+
+        // Send the new verification code to the user's phone number
+        await sendSms(user.phone, otp, smsTypes.register);
+
+        // Expiration date is 120 seconds from now
+        const expireDate = new Date(Date.now() + 120 * 1000);
+
+        // Update user's record with new OTP code and expiration date
+        user.phoneVerification = {
+            code: otp,
+            expireDate,
+            isVerified: false,
+        };
+
+        await user.save();
+
+        return user;
     }
 
-    const token = await Token.findOne({ userId: user._id });
-    if (token) {
-      await token.deleteOne();
+    // after verification log user in directly
+    static async loginDirect(user) {
+        const accessToken = jwt.sign({ _id: user._id }, JWT.ACCESS_SECRET_KEY, {
+            expiresIn: JWT.ACCESS_EXPIRES_IN,
+        });
+
+        const refreshToken = jwt.sign(
+            { _id: user._id },
+            JWT.REFRESH_SECRET_KEY,
+            {
+                expiresIn: JWT.REFRESH_EXPIRES_IN,
+            }
+        );
+
+        const tokens = {
+            accessToken,
+            refreshToken,
+        };
+        return { tokens, user };
     }
 
-    // create random reset token
-    let resetToken = crypto.randomBytes(32).toString("hex");
+    // Login
+    static async login({ phone, password }) {
+        // check if user exists
+        const user = await User.findOne({ phone }).lean();
 
-    // hash resetToken
-    const hashedToken = await hashPassword(resetToken);
+        if (!user) {
+            throw new Error("User with this phone number not found");
+        }
 
-    await new Token({
-      userId: user._id,
-      token: hashedToken,
-      createdAt: Date.now(),
-    }).save();
+        if (phone == null || password == null) {
+            throw new Error("Invalid credentials");
+        }
 
-    const clientURL = process.env.CLIENT_URL;
+        // check if user is verified
+        if (!user.phoneVerification.isVerified) {
+            throw new Error("User must be verified to login");
+        }
 
-    const link = `${clientURL}/reset-password-verify?token=${resetToken}&id=${user._id}`;
+        // check if password is valid
+        const validPassword = await checkPassword(password, user.password);
 
-    const mailObject = {
-      email: user.email,
-      subject: "Password Reset Request",
-      payload: { name: user.firstName, link: link },
-      template: "./template/request-reset-password.handlebars",
-    };
+        if (!validPassword) {
+            throw new Error("Invalid password");
+        }
 
-    // await sendMail(
-    //   res,
-    //   mailObject.email,
-    //   mailObject.subject,
-    //   mailObject.payload,
-    //   mailObject.template
-    // );
-
-    return mailObject.email;
-  }
-
-  // reset password
-  static async resetPasswordVerify(userId, token, password, res) {
-    let passwordResetToken = await Token.findOne({ userId });
-    if (!passwordResetToken) {
-      throw new Error("Invalid or expired password reset token");
+        return AuthService.loginDirect(user);
     }
 
-    const isValid = await checkPassword(token, passwordResetToken.token);
-    if (!isValid) {
-      throw new Error("Invalid or expired password reset token");
+    // refresh token
+    static async refreshToken(refreshToken) {
+        const decoded = jwt.verify(refreshToken, JWT.REFRESH_SECRET_KEY);
+
+        if (!decoded || !decoded._id) {
+            throw new Error("Invalid refresh token");
+        }
+
+        const user = await User.findById(decoded._id);
+
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+        const accessToken = jwt.sign(
+            { _id: decoded._id },
+            JWT.ACCESS_SECRET_KEY,
+            {
+                expiresIn: JWT.ACCESS_EXPIRES_IN,
+            }
+        );
+
+        return accessToken;
     }
 
-    const hash = await hashPassword(password);
+    // Forgot password
+    static async forgotPassword({ phone }) {
+        const user = await User.findOne({ phone });
 
-    await User.updateOne(
-      { _id: userId },
-      { $set: { password: hash } },
-      { new: true }
-    );
+        if (!user) {
+            throw new Error("User not found");
+        }
 
-    const user = await User.findById({ _id: userId });
+        // user must be verified to reset password
+        if (!user.phoneVerification.isVerified) {
+            throw new Error("User must be verified to reset password");
+        }
 
-    // const mailObject = {
-    //   email: user.email,
-    //   subject: "Password Reset Successfully",
-    //   payload: { name: `${user.firstName} ${user.lastName}` },
-    //   template: "./template/request-reset-password.handlebars",
-    // };
+        // create random reset token
+        const otp = generateOtp(6);
 
-    // await sendMail(
-    //   res,
-    //   mailObject.email,
-    //   mailObject.subject,
-    //   mailObject.payload,
-    //   mailObject.template
-    // );
+        user.phoneVerification.code = otp;
 
-    await passwordResetToken.deleteOne();
-    return user.email;
-  }
+        user.save();
+
+        await sendSms(user.phone, otp, smsTypes.resetPassword);
+    }
+
+    // verify password reset otp code
+    static async forgotPasswordVerifyOtp({ phone, otpCode }) {
+        const user = await User.findOne({ phone });
+
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+        if (user.phoneVerification.code !== otpCode) {
+            throw new Error("Invalid OTP code");
+        }
+
+        var randomString = Math.random().toString(36).slice(-8);
+        user.password = await encryptPassword(randomString);
+
+        // send random password as sms
+        await sendSms(user.phone, randomString, smsTypes.newPassword);
+
+        await user.save();
+
+        return user;
+    }
 }
