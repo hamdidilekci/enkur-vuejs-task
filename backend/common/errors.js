@@ -10,31 +10,40 @@ class HttpError extends Error {
     toJSON() {
         return {
             name: this.name,
-            message: this.message
+            message: this.message,
         };
     }
 }
 
 class BadRequestError extends HttpError {
     constructor(message) {
-        super(400, 'BadRequest', message);
+        super(400, "BadRequest", message);
     }
 }
 
 class UnauthorizedError extends HttpError {
     constructor(message) {
-        super(401, 'Unauthorized', message);
+        super(401, "Unauthorized", message);
     }
 }
 
 class NotFoundError extends HttpError {
     constructor(message) {
-        super(404, 'NotFound', message);
+        super(404, "NotFound", message);
+    }
+}
+
+class MissingParameterError extends Error {
+    constructor(parameter) {
+        super(`Missing parameter: ${parameter}`);
+
+        this.name = "MissingParameterError";
     }
 }
 
 export {
     BadRequestError,
     UnauthorizedError,
-    NotFoundError
+    NotFoundError,
+    MissingParameterError,
 };
