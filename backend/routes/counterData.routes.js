@@ -15,12 +15,17 @@ router.get(
     "/",
     isAuthenticated,
     catchFunction(async (req, res) => {
-        const { page = "1", limit = "10" } = req.query;
+        const { page = "1", limit = "10", startDate, endDate } = req.query;
 
         const pageNum = parseInt(page, 10);
         const limitNum = parseInt(limit, 10);
 
-        const counterData = await CounterDataService.get(pageNum, limitNum);
+        const counterData = await CounterDataService.get(
+            pageNum,
+            limitNum,
+            startDate,
+            endDate
+        );
 
         return sendResponse(
             res,
