@@ -81,7 +81,7 @@ router.post(
         return sendResponse(
             res,
             200,
-            { user },
+            { user, tokens },
             "Logged in successfully!",
             tokens
         );
