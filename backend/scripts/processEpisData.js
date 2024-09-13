@@ -22,7 +22,7 @@ const processEpisData = async () => {
 
         // Read the JSON file
         console.log("---3-- Reading JSON file -----");
-        const filePath = path.join(__dirname, "../config/epis_datas.json");
+        const filePath = path.join(__dirname, "../config/data/epis_datas.json");
         const fileData = fs.readFileSync(filePath, "utf8");
         const episData = JSON.parse(fileData);
 

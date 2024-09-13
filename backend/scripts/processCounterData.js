@@ -22,7 +22,10 @@ const processCounterData = async () => {
 
         // Read the JSON file
         console.log("---3-- Reading JSON file -----");
-        const filePath = path.join(__dirname, "../config/counter_logs.json");
+        const filePath = path.join(
+            __dirname,
+            "../config/data/counter_logs.json"
+        );
         const fileData = fs.readFileSync(filePath, "utf8");
         const counterData = JSON.parse(fileData);
 
