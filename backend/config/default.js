@@ -6,7 +6,9 @@ dotenv.config();
 export const DATABASE_USERNAME = process.env.DATABASE_USERNAME;
 export const DATABASE_PASSWORD = process.env.DATABASE_PASSWORD;
 export const DATABASE_HOST = process.env.DATABASE_HOST;
-export const DATABASE_PORT = process.env.DATABASE_PORT ? process.env.DATABASE_PORT : 27017;
+export const DATABASE_PORT = process.env.DATABASE_PORT
+    ? process.env.DATABASE_PORT
+    : 27017;
 export const DATABASE_NAME = process.env.DATABASE_NAME;
 export const DATABASE_PROTOCOL = process.env.DATABASE_PROTOCOL;
 export const DATABASE_OPTIONS = process.env.DATABASE_OPTIONS
@@ -23,7 +25,7 @@ export const ACCESS_EXPIRES_IN = process.env.ACCESS_EXPIRES_IN || "2m";
 export const REFRESH_SECRET_KEY = process.env.REFRESH_SECRET_KEY;
 export const REFRESH_EXPIRES_IN = process.env.REFRESH_EXPIRES_IN || "1d";
 export const BCRYPT_ROUNDS = process.env.BCRYPT_ROUNDS
-    ? process.env.BCRYPT_ROUNDS
+    ? Number(process.env.BCRYPT_ROUNDS)
     : 8;
 
 export const TOTP_SECRET_KEY = process.env.TOTP_SECRET_KEY;
@@ -33,7 +35,6 @@ export const EMAIL_HOST = process.env.EMAIL_HOST;
 export const EMAIL_USERNAME = process.env.EMAIL_USERNAME;
 export const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD;
 export const FROM_EMAIL = process.env.FROM_EMAIL;
-
 
 export const mongo = {
     DATABASE_USERNAME,
