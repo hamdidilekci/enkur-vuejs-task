@@ -1,12 +1,12 @@
-import { UnauthorizedError } from '../common/errors.js';
-import handleError from '../middleware/handle-error.js';
+import catchFunction from "../common/catchFunction.js";
 
-const isAuthenticated = async(req, res, next) => {
-    if (req?.user) {
-        console.log('authenticated');
-        return next();
+const isAuthenticated = catchFunction(async (req, res, next) => {
+    if (!req.user?.phoneVerification.isVerified) {
+        throw new Error("User not authenticated");
     }
-    return handleError(new UnauthorizedError('Not authenticated.'), req, res);
-};
+
+    console.log("authenticated");
+    return next();
+});
 
 export default isAuthenticated;
