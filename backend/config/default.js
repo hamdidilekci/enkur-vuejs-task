@@ -1,5 +1,5 @@
-import dotenv from "dotenv";
 import buildConnectionURI from "../common/buildConnectionURI.js";
+import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -7,7 +7,7 @@ export const DATABASE_USERNAME = process.env.DATABASE_USERNAME;
 export const DATABASE_PASSWORD = process.env.DATABASE_PASSWORD;
 export const DATABASE_HOST = process.env.DATABASE_HOST;
 export const DATABASE_PORT = process.env.DATABASE_PORT
-    ? process.env.DATABASE_PORT
+    ? Number(process.env.DATABASE_PORT)
     : 27017;
 export const DATABASE_NAME = process.env.DATABASE_NAME;
 export const DATABASE_PROTOCOL = process.env.DATABASE_PROTOCOL;
@@ -17,7 +17,7 @@ export const DATABASE_OPTIONS = process.env.DATABASE_OPTIONS
 
 export const SERVER_HOSTNAME = process.env.SERVER_HOSTNAME || "localhost";
 export const SERVER_PORT = process.env.SERVER_PORT
-    ? process.env.SERVER_PORT
+    ? Number(process.env.SERVER_PORT)
     : 3001;
 
 export const ACCESS_SECRET_KEY = process.env.ACCESS_SECRET_KEY;
