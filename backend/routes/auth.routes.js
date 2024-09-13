@@ -1,4 +1,4 @@
-import express from "express";
+import { Router } from "express";
 
 import { checkParams } from "../common/index.js";
 import { MissingParameterError } from "../common/errors.js";
@@ -7,9 +7,9 @@ import sendResponse from "../common/sendResponse.js";
 
 import AuthService from "../services/auth.service.js";
 
-const publicRouter = express.Router();
+const router = Router();
 
-publicRouter.post(
+router.post(
     "/register",
     catchFunction(async (req, res) => {
         const missing = checkParams({
@@ -30,7 +30,7 @@ publicRouter.post(
     })
 );
 
-publicRouter.post(
+router.post(
     "/register/verify-otp",
     catchFunction(async (req, res) => {
         const missing = checkParams({
@@ -48,7 +48,7 @@ publicRouter.post(
     })
 );
 
-publicRouter.post(
+router.post(
     "/send-register-otp",
     catchFunction(async (req, res) => {
         const missing = checkParams({
@@ -65,7 +65,7 @@ publicRouter.post(
     })
 );
 
-publicRouter.post(
+router.post(
     "/login",
     catchFunction(async (req, res) => {
         const missing = checkParams({
@@ -88,7 +88,7 @@ publicRouter.post(
     })
 );
 
-publicRouter.post(
+router.post(
     "/refresh-token",
     catchFunction(async (req, res) => {
         const refreshToken = req.cookies["refreshToken"];
@@ -105,7 +105,7 @@ publicRouter.post(
     })
 );
 
-publicRouter.post(
+router.post(
     "/forgot-password",
     catchFunction(async (req, res) => {
         const missing = checkParams({
@@ -123,7 +123,7 @@ publicRouter.post(
 );
 
 // verify otp and reset password, send new password to user
-publicRouter.post(
+router.post(
     "/forgot-password/verify-otp",
     catchFunction(async (req, res) => {
         const phone = req.body.phone;
@@ -152,4 +152,4 @@ publicRouter.post(
     })
 );
 
-export { publicRouter };
+export default router;
