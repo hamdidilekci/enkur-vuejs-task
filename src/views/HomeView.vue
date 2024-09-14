@@ -18,6 +18,27 @@
         <!-- Epis Data Table -->
         <section class="table-section">
             <h2>Epis Data</h2>
+
+            <!-- Datepickers for Epis Data -->
+            <section class="date-picker-section">
+                <div class="date-picker-container">
+                    <label for="start-date">Start Date</label>
+                    <input
+                        type="date"
+                        id="start-date"
+                        v-model="episDataStartDate"
+                    />
+                    <label for="end-date">End Date</label>
+                    <input
+                        type="date"
+                        id="end-date"
+                        v-model="episDataEndDate"
+                    />
+                    <button @click="fetchEpisData">Filter</button>
+                    <button @click="clearEpisDataFilters">Clear</button>
+                </div>
+            </section>
+
             <table class="data-table">
                 <thead>
                     <tr>
@@ -67,17 +88,15 @@
                         type="date"
                         id="start-date"
                         v-model="counterLogStartDate"
-                        @change="updateCounterData"
                     />
                     <label for="end-date">End Date</label>
                     <input
                         type="date"
                         id="end-date"
                         v-model="counterLogEndDate"
-                        @change="updateCounterData"
                     />
                     <button @click="fetchCounterData">Filter</button>
-                    <button @click="clearFilters">Clear</button>
+                    <button @click="clearCounterLogFilters">Clear</button>
                 </div>
             </section>
 
@@ -147,6 +166,8 @@ export default {
             monthlySelectedDate: null,
             counterLogStartDate: null,
             counterLogEndDate: null,
+            episDataStartDate: null,
+            episDataEndDate: null,
             episData: [],
             counterData: [],
             accessToken: localStorage.getItem("accessToken"),
@@ -184,8 +205,8 @@ export default {
                         params: {
                             page: this.currentPageEpis,
                             limit: this.itemsPerPage,
-                            startDate: "2024-08-01",
-                            endDate: "2024-08-03",
+                            startDate: this.episDataStartDate,
+                            endDate: this.episDataEndDate,
                         },
                         headers: {
                             Authorization: `Bearer ${this.accessToken}`,
@@ -278,9 +299,15 @@ export default {
             };
         },
 
-        clearFilters() {
+        clearCounterLogFilters() {
             this.counterLogStartDate = "";
             this.counterLogEndDate = "";
+            this.fetchCounterData();
+        },
+
+        clearEpisDataFilters() {
+            this.episDataStartDate = "";
+            this.episDataEndDate = "";
             this.fetchCounterData();
         },
     },
