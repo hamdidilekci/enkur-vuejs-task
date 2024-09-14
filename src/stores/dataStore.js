@@ -29,7 +29,7 @@ export const useDataStore = defineStore("dataStore", {
                         },
                     }
                 );
-                this.episData = response.data.data;
+                this.episData = response.data;
             } catch (error) {
                 this.error = "Error fetching Epis data";
                 console.error(error);
@@ -55,7 +55,7 @@ export const useDataStore = defineStore("dataStore", {
                         },
                     }
                 );
-                this.counterData = response.data.data;
+                this.counterData = response.data;
             } catch (error) {
                 this.error = "Error fetching Counter Log data";
                 console.error(error);
@@ -81,7 +81,7 @@ export const useDataStore = defineStore("dataStore", {
                         },
                     }
                 );
-                this.totalValues = response.data.data;
+                this.totalValues = response.data;
             } catch (error) {
                 this.error = "Error fetching total values";
                 console.error(error);

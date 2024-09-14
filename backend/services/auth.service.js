@@ -131,19 +131,7 @@ export default class AuthService {
             expiresIn: JWT.ACCESS_EXPIRES_IN,
         });
 
-        const refreshToken = jwt.sign(
-            { _id: user._id },
-            JWT.REFRESH_SECRET_KEY,
-            {
-                expiresIn: JWT.REFRESH_EXPIRES_IN,
-            }
-        );
-
-        const tokens = {
-            accessToken,
-            refreshToken,
-        };
-        return { tokens, user };
+        return { accessToken, user };
     }
 
     // Login

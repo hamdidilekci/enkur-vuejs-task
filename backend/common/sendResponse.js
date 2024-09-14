@@ -19,16 +19,7 @@ const sendResponse = (res, code, data, message, tokens) => {
         }
     }
 
-    return res.status(code).json({
-        status: code >= 200 && code < 300 ? "success" : "error",
-        data: data,
-        message:
-            message.length === 0
-                ? code >= 200 && code < 300
-                    ? "success"
-                    : "something_went_wrong"
-                : message,
-    });
+    return res.status(code).json(data);
 };
 
 export default sendResponse;

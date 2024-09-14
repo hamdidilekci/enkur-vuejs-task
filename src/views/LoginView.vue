@@ -30,11 +30,11 @@ const login = async () => {
   try {
     const response = await axios.post('http://localhost:3001/auth/login', { phone: phone.value, password: password.value });
         // Get tokens from response
-        const { accessToken, refreshToken } = response?.data.data.tokens;
-
+        const { accessToken } = response?.data;
+      console.log('response', response);
+      
         // Store tokens in localStorage
         localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
     alert('Login successful');
   } catch (error) {
     alert('Login failed: ' + error.response?.data?.message);

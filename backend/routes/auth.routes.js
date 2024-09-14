@@ -76,14 +76,13 @@ router.post(
         if (missing.length > 0) {
             throw new MissingParameterError(missing.join(", "));
         }
-        let { tokens, user } = await AuthService.login(req.body);
+        let { accessToken, user } = await AuthService.login(req.body);
 
         return sendResponse(
             res,
             200,
-            { user, tokens },
-            "Logged in successfully!",
-            tokens
+            { user, accessToken },
+            "Logged in successfully!"
         );
     })
 );
