@@ -1,13 +1,17 @@
 import CounterData from "../models/counterData.model.js";
+import moment from "moment";
 
 export default class CounterDataService {
     static async get(page, limit, startDate, endDate) {
         const query = {};
 
+        const formattedStardDate = moment(startDate, "YYYY-MM-DD").startOf('day').toISOString()
+        const formattedEndDate = moment(endDate, "YYYY-MM-DD").endOf('day').toISOString()
+
         if (startDate && endDate) {
             query.read_time = {
-                $gte: new Date(startDate),
-                $lte: new Date(endDate),
+                $gte: formattedStardDate, // UTC start of day
+                $lte: formattedEndDate
             };
         }
 

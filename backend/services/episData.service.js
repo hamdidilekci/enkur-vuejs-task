@@ -1,4 +1,5 @@
 import EpisData from "../models/episData.model.js";
+import moment from "moment";
 
 export default class EpisDataService {
     static async get(page, limit, startDate, endDate) {
@@ -6,9 +7,12 @@ export default class EpisDataService {
 
         // If startDate and endDate are provided, add a date filter to the query
         if (startDate && endDate) {
+            const startDateUTC = moment(startDate).startOf("day").toISOString();
+            const endDateUTC = moment(endDate).endOf("day").toISOString();
+
             query.read_time = {
-                $gte: new Date(startDate),
-                $lte: new Date(endDate),
+                $gte: startDateUTC,
+                $lte: endDateUTC,
             };
         }
 

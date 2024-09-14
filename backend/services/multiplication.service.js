@@ -7,33 +7,30 @@ export default class MultiplicationService {
         // Define default day as 30 days ago and default month as 1 month ago in UTC
         const defaultDay = moment()
             .subtract(30, 'days')
-            .utc()
             .startOf('day')
             .toISOString(); // Ensures UTC
 
         const defaultMonthStartDate = moment()
             .subtract(1, 'month')
-            .utc()
             .startOf('month')
             .toISOString();
 
         const defaultMonthEndDate = moment()
             .subtract(1, 'month')
-            .utc()
             .endOf('month')
             .toISOString();
 
         // Format the day and month, or use defaults if not provided
         const formattedDayDate = day
-            ? moment.utc(day, "YYYY-MM-DD").startOf('day').toISOString()
+            ? moment(day, "YYYY-MM-DD").startOf('day').toISOString()
             : defaultDay;
 
         const formattedMonthStartDate = month
-            ? moment.utc(month, "YYYY-MM").startOf('month').toISOString()
+            ? moment(month, "YYYY-MM").startOf('month').toISOString()
             : defaultMonthStartDate;
 
         const formattedMonthEndDate = month
-            ? moment.utc(month, "YYYY-MM").endOf('month').toISOString()
+            ? moment(month, "YYYY-MM").endOf('month').toISOString()
             : defaultMonthEndDate;
 
         // Fetch data for the specific day if the day is provided
@@ -41,7 +38,7 @@ export default class MultiplicationService {
         let monthlyTotal = -1;
 
         if (formattedDayDate) {
-            const formattedDayEndDate = moment.utc(formattedDayDate).endOf("day").toISOString();
+            const formattedDayEndDate = moment(formattedDayDate).endOf("day").toISOString();
 
             const episData = await EpisData.find({
                 read_time: {
