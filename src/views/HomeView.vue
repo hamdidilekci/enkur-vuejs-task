@@ -58,6 +58,29 @@
         <!-- Counter Log Data Table -->
         <section class="table-section">
             <h2>Counter Log Data</h2>
+
+            <!-- Datepickers for Counter Log Data -->
+            <section class="date-picker-section">
+                <div class="date-picker-container">
+                    <label for="start-date">Start Date</label>
+                    <input
+                        type="date"
+                        id="start-date"
+                        v-model="counterLogStartDate"
+                        @change="updateCounterData"
+                    />
+                    <label for="end-date">End Date</label>
+                    <input
+                        type="date"
+                        id="end-date"
+                        v-model="counterLogEndDate"
+                        @change="updateCounterData"
+                    />
+                    <button @click="fetchCounterData">Filter</button>
+                    <button @click="clearFilters">Clear</button>
+                </div>
+            </section>
+
             <table class="data-table">
                 <thead>
                     <tr>
@@ -122,6 +145,8 @@ export default {
             monthlyTotal: null,
             dailySelectedDate: null,
             monthlySelectedDate: null,
+            counterLogStartDate: null,
+            counterLogEndDate: null,
             episData: [],
             counterData: [],
             accessToken: localStorage.getItem("accessToken"),
@@ -184,8 +209,8 @@ export default {
                         params: {
                             page: this.currentPageCounter,
                             limit: this.itemsPerPage,
-                            startDate: "2023-12-05",
-                            endDate: "2023-12-13",
+                            startDate: this.counterLogStartDate,
+                            endDate: this.counterLogEndDate,
                         },
                         headers: {
                             Authorization: `Bearer ${this.accessToken}`,
@@ -251,6 +276,12 @@ export default {
                 // Always send both daily and monthly values
                 this.fetchTotalValues();
             };
+        },
+
+        clearFilters() {
+            this.counterLogStartDate = "";
+            this.counterLogEndDate = "";
+            this.fetchCounterData();
         },
     },
 
@@ -341,5 +372,48 @@ h1 {
     margin: 0 10px;
     font-size: 16px;
     color: #ffffff;
+}
+
+.date-picker-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.date-picker-section label {
+    font-size: 16px;
+    color: #fff;
+    margin: 8px;
+}
+
+.date-picker-section input[type="date"] {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.date-picker-section button {
+    background-color: #4a90e2;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    margin-left: 5px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.date-picker-section button:hover {
+    background-color: #357abd;
+}
+
+.date-picker-section button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
 }
 </style>

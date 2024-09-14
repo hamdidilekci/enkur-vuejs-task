@@ -16,7 +16,8 @@ export default class CounterDataService {
 
         const counterData = await CounterData.find(query)
             .skip((page - 1) * limit)
-            .limit(limit);
+            .limit(limit)
+            .lean();
 
         return { counterData, totalRecords };
     }
