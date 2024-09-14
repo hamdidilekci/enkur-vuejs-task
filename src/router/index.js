@@ -3,6 +3,7 @@ import HomeView from "../views/HomeView.vue";
 import LoginView from "../views/LoginView.vue";
 import RegisterView from "../views/RegisterView.vue";
 
+import axios from "axios";
 import { useAuthStore } from "../stores/authStore";
 
 const router = createRouter({
@@ -13,18 +14,24 @@ const router = createRouter({
             name: "home",
             component: HomeView,
             meta: {
-                requiresAuth: true,
+                requiresAuth: true, // Require user to be authenticated to access this route
             },
         },
         {
             path: "/register",
             name: "register",
             component: RegisterView,
+            meta: {
+                hideWhenAuth: true, // Hide this route when user is authenticated
+            },
         },
         {
             path: "/login",
             name: "login",
             component: LoginView,
+            meta: {
+                hideWhenAuth: true,
+            },
         },
         { path: "/:catchAll(.*)", redirect: "/" },
     ],
@@ -56,18 +63,20 @@ router.beforeEach((to, from, next) => {
 
 // guard for authentication
 router.beforeEach((to, from, next) => {
-    const requiresAuth = to.meta.requiresAuth;
-
     const authStore = useAuthStore();
     const isAuthenticated = authStore.isAuthenticated;
 
     console.log("User is authenticated");
 
-    if (requiresAuth && !isAuthenticated) {
-        next("/login");
-    } else {
-        next();
+    if (isAuthenticated && to.meta.hideWhenAuth) {
+        next("/");
     }
+
+    if (!isAuthenticated && to.meta.requiresAuth) {
+        next("/login");
+    }
+
+    next();
 });
 
 export default router;

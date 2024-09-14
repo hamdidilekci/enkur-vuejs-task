@@ -21,11 +21,14 @@
 <script setup>
 import { useAuthStore } from '../stores/authStore';
 import { RouterLink } from 'vue-router';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 const authStore = useAuthStore();
 
 const handleLogout = () => {
   authStore.logout();
+  router.push({ path: 'login' })
 };
 </script>
 

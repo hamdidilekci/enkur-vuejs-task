@@ -22,9 +22,12 @@
 <script setup>
 import { ref } from 'vue';
 import axios from 'axios';
+import { useRouter } from 'vue-router';
 
-const phone = ref('');
-const password = ref('');
+const router = useRouter();
+
+const phone = ref('05334445566');
+const password = ref('Hamdi.1234');
 
 const login = async () => {
   try {
@@ -34,9 +37,11 @@ const login = async () => {
       
         // Store tokens in localStorage
         localStorage.setItem('accessToken', accessToken);
-    alert('Login successful');
+    router.push({ path: 'home' })
   } catch (error) {
-    alert('Login failed: ' + error.response?.data?.message);
+    console.log('error', error);
+    const errorMessage = error.response?.data?.message || 'An error occurred';
+    alert('Login failed: ' + errorMessage );
   }
 };
 </script>
