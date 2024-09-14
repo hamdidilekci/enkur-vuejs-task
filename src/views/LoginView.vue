@@ -31,7 +31,6 @@ const login = async () => {
     const response = await axios.post('http://localhost:3001/auth/login', { phone: phone.value, password: password.value });
         // Get tokens from response
         const { accessToken } = response?.data;
-      console.log('response', response);
       
         // Store tokens in localStorage
         localStorage.setItem('accessToken', accessToken);
