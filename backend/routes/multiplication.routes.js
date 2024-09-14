@@ -5,16 +5,18 @@ import sendResponse from "../common/sendResponse.js";
 import isAuthenticated from "../middleware/is-authenticated.js";
 
 const router = Router();
-//! add page, limit and initial dates
+
 router.get(
     "/totals",
     isAuthenticated,
     catchFunction(async (req, res) => {
-        const { startDate, endDate } = req.query;
+        const { page, limit, day, month } = req.query;
 
         const totals = await MultiplicationService.calculateTotals(
-            startDate,
-            endDate
+            page,
+            limit,
+            day,
+            month
         );
 
         return sendResponse(
