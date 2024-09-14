@@ -10,14 +10,9 @@ router.get(
     "/totals",
     isAuthenticated,
     catchFunction(async (req, res) => {
-        const { page, limit, day, month } = req.query;
+        const { day, month } = req.query;
 
-        const totals = await MultiplicationService.calculateTotals(
-            page,
-            limit,
-            day,
-            month
-        );
+        const totals = await MultiplicationService.calculateTotals(day, month);
 
         return sendResponse(
             res,

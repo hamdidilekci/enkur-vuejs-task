@@ -3,7 +3,7 @@ import CounterData from "../models/counterData.model.js";
 import moment from "moment";
 
 export default class MultiplicationService {
-    static async calculateTotals(page = 1, limit = 10, day, month) {
+    static async calculateTotals(day, month) {
         // Define default day as 30 days ago and default month as 1 month ago
         const defaultDay = moment()
             .subtract(30, "days")
@@ -34,11 +34,9 @@ export default class MultiplicationService {
             ? moment.utc(month, "YYYY-MM").endOf("month").toDate()
             : defaultMonthEndDate;
 
-        const skip = (page - 1) * limit;
-
         // Fetch data for the specific day if the day is provided
-        let dailyTotals = {};
-        let monthlyTotals = {};
+        let dailyTotal = -1;
+        let monthlyTotal = -1;
 
         if (formattedDayDate) {
             const episData = await EpisData.find({
@@ -46,18 +44,14 @@ export default class MultiplicationService {
                     $gte: formattedDayDate,
                     $lte: moment(formattedDayDate).endOf("day").toDate(),
                 },
-            })
-                .skip(skip)
-                .limit(limit);
+            });
 
             const counterData = await CounterData.find({
                 read_time: {
                     $gte: formattedDayDate,
                     $lte: moment(formattedDayDate).endOf("day").toDate(),
                 },
-            })
-                .skip(skip)
-                .limit(limit);
+            });
 
             episData.forEach((epis) => {
                 const matchingCounter = counterData.find(
@@ -67,8 +61,7 @@ export default class MultiplicationService {
 
                 if (matchingCounter) {
                     const total = epis.mcp_value * matchingCounter.cn_value;
-                    const dateKey = epis.read_time.toISOString().split("T")[0];
-                    dailyTotals[dateKey] = (dailyTotals[dateKey] || 0) + total;
+                    dailyTotal += total;
                 }
             });
         }
@@ -80,18 +73,14 @@ export default class MultiplicationService {
                     $gte: formattedMonthStartDate,
                     $lte: formattedMonthEndDate,
                 },
-            })
-                .skip(skip)
-                .limit(limit);
+            });
 
             const counterData = await CounterData.find({
                 read_time: {
                     $gte: formattedMonthStartDate,
                     $lte: formattedMonthEndDate,
                 },
-            })
-                .skip(skip)
-                .limit(limit);
+            });
 
             episData.forEach((epis) => {
                 const matchingCounter = counterData.find(
@@ -101,16 +90,11 @@ export default class MultiplicationService {
 
                 if (matchingCounter) {
                     const total = epis.mcp_value * matchingCounter.cn_value;
-                    const monthKey = epis.read_time
-                        .toISOString()
-                        .split("T")[0]
-                        .slice(0, 7); // YYYY-MM
-                    monthlyTotals[monthKey] =
-                        (monthlyTotals[monthKey] || 0) + total;
+                    monthlyTotal += total;
                 }
             });
         }
 
-        return { dailyTotals, monthlyTotals };
+        return { dailyTotal, monthlyTotal };
     }
 }
