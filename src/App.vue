@@ -1,28 +1,7 @@
 <script setup>
-import { onMounted } from 'vue';
 import { RouterView } from 'vue-router';
-import axios from 'axios';
 import NavBar from './components/Navbar.vue';
-import { useAuthStore } from './stores/authStore';
 
-const authStore = useAuthStore();
-
-const checkAuth = async () => {
-  const token = localStorage.getItem('accessToken');
-
-  if (token) {
-    try {
-      const response = await axios.get('http://localhost:3001/auth/check', { headers: { Authorization: `Bearer ${token}` } });
-      authStore.login(response.data.user);
-    } catch (error) {
-      authStore.logout();
-    }
-  } else {
-    authStore.logout();
-  }
-};
-
-onMounted(checkAuth);
 </script>
 
 <template>

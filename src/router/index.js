@@ -29,6 +29,31 @@ const router = createRouter({
         { path: "/:catchAll(.*)", redirect: "/" },
     ],
 });
+
+const checkAuth = async () => {
+    const authStore = useAuthStore();
+    const token = localStorage.getItem("accessToken");
+
+    if (token) {
+        try {
+            const response = await axios.get(
+                "http://localhost:3001/auth/check",
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            authStore.login(response.data.user);
+        } catch (error) {
+            authStore.logout();
+        }
+    } else {
+        authStore.logout();
+    }
+};
+
+// guard for checking authentication status on route change
+router.beforeEach((to, from, next) => {
+    checkAuth().then(() => next());
+});
+
 // guard for authentication
 router.beforeEach((to, from, next) => {
     const requiresAuth = to.meta.requiresAuth;
