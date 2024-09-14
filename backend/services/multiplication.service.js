@@ -4,34 +4,36 @@ import moment from "moment";
 
 export default class MultiplicationService {
     static async calculateTotals(day, month) {
-        // Define default day as 30 days ago and default month as 1 month ago
+        // Define default day as 30 days ago and default month as 1 month ago in UTC
         const defaultDay = moment()
-            .subtract(30, "days")
+            .subtract(30, 'days')
             .utc()
-            .startOf("day")
-            .toDate();
+            .startOf('day')
+            .toISOString(); // Ensures UTC
+
         const defaultMonthStartDate = moment()
-            .subtract(1, "month")
+            .subtract(1, 'month')
             .utc()
-            .startOf("month")
-            .toDate();
+            .startOf('month')
+            .toISOString();
+
         const defaultMonthEndDate = moment()
-            .subtract(1, "month")
+            .subtract(1, 'month')
             .utc()
-            .endOf("month")
-            .toDate();
+            .endOf('month')
+            .toISOString();
 
         // Format the day and month, or use defaults if not provided
         const formattedDayDate = day
-            ? moment.utc(day, "YYYY-MM-DD").startOf("day").toDate()
+            ? moment.utc(day, "YYYY-MM-DD").startOf('day').toISOString()
             : defaultDay;
 
         const formattedMonthStartDate = month
-            ? moment.utc(month, "YYYY-MM").startOf("month").toDate()
+            ? moment.utc(month, "YYYY-MM").startOf('month').toISOString()
             : defaultMonthStartDate;
 
         const formattedMonthEndDate = month
-            ? moment.utc(month, "YYYY-MM").endOf("month").toDate()
+            ? moment.utc(month, "YYYY-MM").endOf('month').toISOString()
             : defaultMonthEndDate;
 
         // Fetch data for the specific day if the day is provided
@@ -39,17 +41,19 @@ export default class MultiplicationService {
         let monthlyTotal = -1;
 
         if (formattedDayDate) {
+            const formattedDayEndDate = moment.utc(formattedDayDate).endOf("day").toISOString();
+
             const episData = await EpisData.find({
                 read_time: {
                     $gte: formattedDayDate,
-                    $lte: moment(formattedDayDate).endOf("day").toDate(),
+                    $lte: formattedDayEndDate,
                 },
             });
 
             const counterData = await CounterData.find({
                 read_time: {
                     $gte: formattedDayDate,
-                    $lte: moment(formattedDayDate).endOf("day").toDate(),
+                    $lte: formattedDayEndDate,
                 },
             });
 
