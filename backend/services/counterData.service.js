@@ -11,10 +11,13 @@ export default class CounterDataService {
             };
         }
 
+        // Get the total number of records
+        const totalRecords = await CounterData.countDocuments(query);
+
         const counterData = await CounterData.find(query)
             .skip((page - 1) * limit)
             .limit(limit);
 
-        return counterData;
+        return { counterData, totalRecords };
     }
 }

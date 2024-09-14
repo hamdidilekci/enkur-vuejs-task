@@ -12,10 +12,14 @@ export default class EpisDataService {
             };
         }
 
+        // Get the total number of records
+        const totalRecords = await EpisData.countDocuments(query);
+
+        // Get the paginated data
         const episData = await EpisData.find(query)
             .skip((page - 1) * limit)
             .limit(limit);
 
-        return episData;
+        return { episData, totalRecords };
     }
 }

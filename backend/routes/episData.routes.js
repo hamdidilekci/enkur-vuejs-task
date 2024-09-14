@@ -1,7 +1,5 @@
 import { Router } from "express";
 
-import { checkParams } from "../common/index.js";
-import { MissingParameterError } from "../common/errors.js";
 import catchFunction from "../common/catchFunction.js";
 import sendResponse from "../common/sendResponse.js";
 
@@ -20,7 +18,7 @@ router.get(
         const pageNum = parseInt(page, 10);
         const limitNum = parseInt(limit, 10);
 
-        const episData = await EpisDataService.get(
+        const { episData, totalRecords } = await EpisDataService.get(
             pageNum,
             limitNum,
             startDate,
@@ -30,7 +28,7 @@ router.get(
         return sendResponse(
             res,
             200,
-            episData,
+            { episData, totalRecords },
             "Epis data fetched successfully!"
         );
     })

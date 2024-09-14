@@ -20,7 +20,7 @@ router.get(
         const pageNum = parseInt(page, 10);
         const limitNum = parseInt(limit, 10);
 
-        const counterData = await CounterDataService.get(
+        const { counterData, totalRecords } = await CounterDataService.get(
             pageNum,
             limitNum,
             startDate,
@@ -30,7 +30,7 @@ router.get(
         return sendResponse(
             res,
             200,
-            counterData,
+            { counterData, totalRecords },
             "Counter data fetched successfully!"
         );
     })
