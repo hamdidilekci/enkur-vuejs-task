@@ -11,7 +11,7 @@
           <RouterLink to="/login" class="nav-button">Login</RouterLink>
         </template>
         <template v-else>
-          <button @click="handleLogout" class="nav-button">Logout</button>
+          <RouterLink @click="handleLogout" class="nav-button">Logout</RouterLink>
         </template>
       </div>
     </nav>
