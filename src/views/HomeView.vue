@@ -162,8 +162,8 @@ export default {
             Authorization: `Bearer ${this.accessToken}`
           }
         });
-        this.episData = response.data.data;
-        this.totalPagesEpis = Math.ceil(response.data.totalCount / this.itemsPerPage);
+        this.episData = response.data.data.episData;
+        this.totalPagesEpis = Math.ceil(response.data.data.totalRecords / this.itemsPerPage);
       } catch (error) {
         console.error('Error fetching Epis data:', error);
       }
@@ -183,8 +183,8 @@ export default {
           }
         });
 
-        this.counterData = response.data.data;
-        this.totalPagesCounter = Math.ceil(response.data.totalCount / this.itemsPerPage);
+        this.counterData = response.data.data.counterData;
+        this.totalPagesCounter = Math.ceil(response.data.data.totalRecords / this.itemsPerPage);
       } catch (error) {
         console.error('Error fetching Counter Log data:', error);
       }
