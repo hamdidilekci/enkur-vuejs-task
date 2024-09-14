@@ -1,85 +1,75 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+import { ref, onMounted } from 'vue';
+import { RouterView } from 'vue-router';
+import axios from 'axios';
+import NavBar from './components/Navbar.vue';
+
+const isAuthenticated = ref(false);
+
+const checkAuth = async () => {
+  const token = localStorage.getItem('accessToken');
+
+  if (token) {
+    try {
+      await axios.get('http://localhost:3001/auth/check', { headers: { Authorization: `Bearer ${token}` } });
+      isAuthenticated.value = true;
+    } catch (error) {
+      isAuthenticated.value = false;
+    }
+  }
+};
+
+onMounted(checkAuth);
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
+  <div id="app">
+    <!-- Include the NavBar at the top of the page -->
+    <NavBar :isAuthenticated="isAuthenticated" />
 
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
+    <!-- Main content -->
+    <div class="main-content">
+      <RouterView />
     </div>
-  </header>
-
-  <RouterView />
+  </div>
 </template>
 
 <style scoped>
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.main-content {
+  flex-grow: 1;
+  padding-top: 2rem;
+}
+
 header {
-  line-height: 1.5;
-  max-height: 100vh;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
+  background-color: #333;
+  z-index: 1000;
 }
 
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
+header nav {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
 }
 
 nav a {
-  display: inline-block;
+  color: white;
+  text-decoration: none;
   padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
 }
 
-nav a:first-of-type {
-  border: 0;
+nav a.router-link-active {
+  color: yellow;
+  text-decoration: none;
 }
 
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
-}
 </style>
