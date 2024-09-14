@@ -1,21 +1,24 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { onMounted } from 'vue';
 import { RouterView } from 'vue-router';
 import axios from 'axios';
 import NavBar from './components/Navbar.vue';
+import { useAuthStore } from './stores/authStore';
 
-const isAuthenticated = ref(false);
+const authStore = useAuthStore();
 
 const checkAuth = async () => {
   const token = localStorage.getItem('accessToken');
 
   if (token) {
     try {
-      await axios.get('http://localhost:3001/auth/check', { headers: { Authorization: `Bearer ${token}` } });
-      isAuthenticated.value = true;
+      const response = await axios.get('http://localhost:3001/auth/check', { headers: { Authorization: `Bearer ${token}` } });
+      authStore.login(response.data.user);
     } catch (error) {
-      isAuthenticated.value = false;
+      authStore.logout();
     }
+  } else {
+    authStore.logout();
   }
 };
 
@@ -25,7 +28,7 @@ onMounted(checkAuth);
 <template>
   <div id="app">
     <!-- Include the NavBar at the top of the page -->
-    <NavBar :isAuthenticated="isAuthenticated" />
+    <NavBar/>
 
     <!-- Main content -->
     <div class="main-content">
