@@ -152,4 +152,21 @@ router.post(
     })
 );
 
+// check authentication and return user info
+router.get(
+    "/check",
+    catchFunction(async (req, res) => {
+        // get token from request headers
+        const token = req.headers.authorization?.split(" ")[1];
+
+        if (!token) {
+            throw new Error("Access denied! Please login.");
+        }
+
+        const user = await AuthService.checkAuth(token);
+
+        return sendResponse(res, 200, user, "User authenticated successfully!");
+    })
+);
+
 export default router;

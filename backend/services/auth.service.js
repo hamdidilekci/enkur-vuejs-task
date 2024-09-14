@@ -244,4 +244,25 @@ export default class AuthService {
 
         return user;
     }
+
+    // check if user is authenticated
+    static async checkAuth(token) {
+        try {
+            const decoded = jwt.verify(token, JWT.ACCESS_SECRET_KEY);
+
+            if (!decoded || !decoded._id) {
+                throw new Error("Invalid token");
+            }
+
+            const user = await User.findById(decoded._id);
+
+            if (!user) {
+                throw new Error("User not found");
+            }
+
+            return user;
+        } catch (error) {
+            throw new Error("Invalid token");
+        }
+    }
 }
