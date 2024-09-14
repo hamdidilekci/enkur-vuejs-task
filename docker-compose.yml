@@ -7,23 +7,13 @@ services:
             - ./backend:/backend
         ports:
             - "3001:3001"
-    mongo_db:
-        container_name: MongoDB
-        image: mongo
-        volumes:
-            - mongo_data:/data/db
-        ports:
-            - "27017:27017"
     frontend:
         container_name: frontend
         build:
-            context: ./
+            context: ./frontend
             dockerfile: Dockerfile-frontend
         ports:
-            - "5173:5173"
+            - '5173:5173'
         volumes:
-            - ./:/
-            - /node_modules
-
-volumes:
-    mongo_data:
+            - ./frontend:/app
+            - /app/node_modules
